@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Abertura de Demanda BI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --text-xs:clamp(0.75rem,0.7rem + 0.25vw,0.875rem);
+  --text-sm:clamp(0.875rem,0.8rem + 0.35vw,1rem);
+  --text-base:clamp(1rem,0.95rem + 0.25vw,1.125rem);
+  --text-lg:clamp(1.125rem,1rem + 0.75vw,1.5rem);
+  --text-xl:clamp(1.5rem,1.2rem + 1.25vw,2.25rem);
+  --space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;
+  --space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;
+  --space-12:3rem;--space-16:4rem;
+  --radius-sm:0.375rem;--radius-md:0.5rem;--radius-lg:0.75rem;--radius-xl:1rem;
+  --radius-full:9999px;
+  --color-bg:#f7f6f2;--color-surface:#ffffff;--color-surface-2:#f9f8f5;
+  --color-border:#dcd9d5;--color-divider:#e8e6e1;
+  --color-text:#1c1a16;--color-text-muted:#6b6965;--color-text-faint:#b0aea9;
+  --color-primary:#1A50E8;--color-primary-hover:#1240c4;--color-primary-light:#e8eefb;
+  --color-accent:#E8670A;--color-accent-light:#fdf0e6;
+  --color-success:#2e7d32;--color-success-light:#e8f5e9;
+  --color-warning:#c07c00;--color-warning-light:#fff8e1;
+  --color-error:#b71c1c;--color-error-light:#ffebee;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.07);
+  --shadow-md:0 4px 16px rgba(0,0,0,0.09);
+  --shadow-lg:0 12px 40px rgba(0,0,0,0.12);
+  --font-body:'Inter',system-ui,sans-serif;
+  --font-display:'Instrument Serif',Georgia,serif;
+  --transition:180ms cubic-bezier(0.16,1,0.3,1);
+}
+html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;scroll-behavior:smooth}
+body{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);background:var(--color-bg);min-height:100dvh;line-height:1.6}
+input,select,textarea,button{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:none}
+
+/* LAYOUT */
+.page-wrapper{max-width:860px;margin:0 auto;padding:var(--space-8) var(--space-4) var(--space-16)}
+
+/* HEADER */
+.form-header{background:var(--color-primary);border-radius:var(--radius-xl);padding:var(--space-8) var(--space-10);margin-bottom:var(--space-8);position:relative;overflow:hidden}
+.form-header::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.06)}
+.form-header::after{content:'';position:absolute;bottom:-40px;left:40%;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,0.04)}
+.header-badge{display:inline-flex;align-items:center;gap:var(--space-2);background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.9);font-size:var(--text-xs);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);margin-bottom:var(--space-4)}
+.header-badge svg{width:12px;height:12px}
+.form-header h1{font-family:var(--font-display);color:#fff;font-size:var(--text-xl);font-weight:400;line-height:1.2;margin-bottom:var(--space-2)}
+.form-header p{color:rgba(255,255,255,0.72);font-size:var(--text-sm)}
+.header-meta{display:flex;gap:var(--space-6);margin-top:var(--space-6)}
+.header-meta-item{color:rgba(255,255,255,0.6);font-size:var(--text-xs)}
+.header-meta-item strong{color:#fff;display:block;font-size:var(--text-sm)}
+
+/* SCORE CARD */
+.score-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:var(--space-6) var(--space-8);margin-bottom:var(--space-8);box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:var(--space-8)}
+.score-display{text-align:center;flex-shrink:0}
+.score-circle{width:96px;height:96px;border-radius:50%;border:5px solid var(--color-border);display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--color-bg);transition:border-color var(--transition),background var(--transition)}
+.score-circle.low{border-color:#aaa;background:#f5f5f5}
+.score-circle.medium{border-color:var(--color-warning);background:var(--color-warning-light)}
+.score-circle.high{border-color:var(--color-accent);background:var(--color-accent-light)}
+.score-circle.critical{border-color:var(--color-error);background:var(--color-error-light)}
+.score-value{font-size:2rem;font-weight:700;line-height:1;color:var(--color-text)}
+.score-max{font-size:var(--text-xs);color:var(--color-text-muted)}
+.score-label{font-size:var(--text-xs);font-weight:600;margin-top:var(--space-2);color:var(--color-text-muted)}
+.score-label.low{color:#888}
+.score-label.medium{color:var(--color-warning)}
+.score-label.high{color:var(--color-accent)}
+.score-label.critical{color:var(--color-error)}
+.score-breakdown{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)}
+.score-item{display:flex;align-items:center;justify-content:space-between;padding:var(--space-2) var(--space-3);background:var(--color-bg);border-radius:var(--radius-md)}
+.score-item-label{font-size:var(--text-xs);color:var(--color-text-muted)}
+.score-item-val{font-size:var(--text-sm);font-weight:700;color:var(--color-text)}
+.score-item .bar-wrap{height:4px;background:var(--color-divider);border-radius:2px;margin-top:4px;overflow:hidden}
+.score-item .bar-fill{height:100%;border-radius:2px;background:var(--color-primary);transition:width 0.4s ease}
+
+/* SECTIONS */
+.form-section{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:var(--space-6) var(--space-8);margin-bottom:var(--space-6);box-shadow:var(--shadow-sm)}
+.section-header{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-6);padding-bottom:var(--space-4);border-bottom:1px solid var(--color-divider)}
+.section-num{width:28px;height:28px;border-radius:50%;background:var(--color-primary);color:#fff;font-size:var(--text-xs);font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.section-title{font-size:var(--text-sm);font-weight:700;letter-spacing:0.03em;color:var(--color-text);text-transform:uppercase}
+
+/* FORM GRID */
+.form-grid{display:grid;gap:var(--space-5)}
+.form-grid-2{grid-template-columns:1fr 1fr}
+.form-grid-3{grid-template-columns:1fr 1fr 1fr}
+.form-group{display:flex;flex-direction:column;gap:var(--space-2)}
+.form-group.span-2{grid-column:span 2}
+.form-group.span-3{grid-column:span 3}
+label{font-size:var(--text-sm);font-weight:600;color:var(--color-text)}
+label .required{color:var(--color-error);margin-left:2px}
+label .hint{font-weight:400;color:var(--color-text-muted);font-size:var(--text-xs);margin-left:var(--space-1)}
+input[type=text],input[type=date],input[type=email],input[type=number],select,textarea{
+  width:100%;padding:var(--space-3) var(--space-4);border:1.5px solid var(--color-border);
+  border-radius:var(--radius-md);background:var(--color-bg);font-size:var(--text-sm);
+  color:var(--color-text);transition:border-color var(--transition),box-shadow var(--transition);
+  outline:none
+}
+input:focus,select:focus,textarea:focus{border-color:var(--color-primary);box-shadow:0 0 0 3px rgba(26,80,232,0.10)}
+textarea{resize:vertical;min-height:90px;line-height:1.6}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b6965' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+
+/* RADIO SCALE */
+.scale-group{display:flex;flex-direction:column;gap:var(--space-3)}
+.scale-label-row{display:flex;justify-content:space-between;font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-1)}
+.scale-options{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--space-2)}
+.scale-option{display:flex;flex-direction:column;align-items:center;gap:var(--space-1);cursor:pointer}
+.scale-option input[type=radio]{display:none}
+.scale-btn{width:100%;padding:var(--space-2) var(--space-1);border:1.5px solid var(--color-border);border-radius:var(--radius-md);text-align:center;font-size:var(--text-sm);font-weight:700;color:var(--color-text-muted);background:var(--color-bg);transition:all var(--transition);cursor:pointer}
+.scale-option input[type=radio]:checked + .scale-btn{border-color:var(--color-primary);background:var(--color-primary);color:#fff;box-shadow:0 2px 8px rgba(26,80,232,0.25)}
+.scale-btn:hover{border-color:var(--color-primary);color:var(--color-primary)}
+.scale-desc{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--space-2);margin-top:var(--space-1)}
+.scale-desc span{font-size:10px;color:var(--color-text-faint);text-align:center;line-height:1.3}
+
+/* COMPLEXITY TAG */
+.tag-group{display:flex;gap:var(--space-3);flex-wrap:wrap}
+.tag-option{cursor:pointer}
+.tag-option input[type=radio]{display:none}
+.tag-btn{display:inline-flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-4);border:1.5px solid var(--color-border);border-radius:var(--radius-full);font-size:var(--text-sm);font-weight:500;color:var(--color-text-muted);background:var(--color-bg);transition:all var(--transition);cursor:pointer}
+.tag-option input[type=radio]:checked + .tag-btn{border-color:var(--color-primary);background:var(--color-primary-light);color:var(--color-primary);font-weight:700}
+.tag-dot{width:8px;height:8px;border-radius:50%}
+
+/* CHECKBOX LIST */
+.checkbox-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)}
+.check-item{display:flex;align-items:center;gap:var(--space-3);cursor:pointer;padding:var(--space-2) var(--space-3);border-radius:var(--radius-md);transition:background var(--transition)}
+.check-item:hover{background:var(--color-bg)}
+.check-item input[type=checkbox]{width:16px;height:16px;accent-color:var(--color-primary);cursor:pointer}
+.check-item span{font-size:var(--text-sm);color:var(--color-text)}
+
+/* ID FIELD */
+.id-field{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-4);background:var(--color-bg);border:1px dashed var(--color-border);border-radius:var(--radius-md)}
+.id-field span{font-family:monospace;font-size:var(--text-sm);color:var(--color-text-muted);letter-spacing:0.05em}
+.id-copy-btn{margin-left:auto;padding:var(--space-1) var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-full);font-size:var(--text-xs);color:var(--color-text-muted);background:var(--color-surface);transition:all var(--transition)}
+.id-copy-btn:hover{border-color:var(--color-primary);color:var(--color-primary)}
+
+/* ACTIONS */
+.form-actions{display:flex;gap:var(--space-4);justify-content:flex-end;margin-top:var(--space-8)}
+.btn{display:inline-flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-6);border-radius:var(--radius-md);font-size:var(--text-sm);font-weight:600;transition:all var(--transition);border:1.5px solid transparent;cursor:pointer}
+.btn-primary{background:var(--color-primary);color:#fff;border-color:var(--color-primary)}
+.btn-primary:hover{background:var(--color-primary-hover);border-color:var(--color-primary-hover);box-shadow:0 4px 14px rgba(26,80,232,0.3)}
+.btn-ghost{background:transparent;color:var(--color-text-muted);border-color:var(--color-border)}
+.btn-ghost:hover{border-color:var(--color-primary);color:var(--color-primary)}
+.btn-print{background:transparent;color:var(--color-text-muted);border-color:var(--color-border)}
+.btn-print:hover{border-color:var(--color-text-muted);color:var(--color-text)}
+.btn svg{width:16px;height:16px}
+
+/* INFO BOX */
+.info-box{display:flex;gap:var(--space-3);padding:var(--space-4);background:var(--color-primary-light);border-radius:var(--radius-md);border-left:3px solid var(--color-primary)}
+.info-box svg{flex-shrink:0;color:var(--color-primary);margin-top:2px}
+.info-box p{font-size:var(--text-xs);color:var(--color-primary);line-height:1.6}
+
+/* STATUS BADGE */
+.status-row{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;margin-top:var(--space-4)}
+.status-option{cursor:pointer}
+.status-option input{display:none}
+.status-pill{display:inline-flex;align-items:center;gap:var(--space-2);padding:var(--space-1) var(--space-4);border-radius:var(--radius-full);border:1.5px solid var(--color-border);font-size:var(--text-xs);font-weight:600;color:var(--color-text-muted);background:var(--color-bg);transition:all var(--transition);cursor:pointer}
+.status-dot{width:6px;height:6px;border-radius:50%}
+.status-option input:checked + .status-pill{font-weight:700}
+.status-option[data-status="novo"] input:checked + .status-pill{border-color:#1A50E8;background:#e8eefb;color:#1A50E8}
+.status-option[data-status="analise"] input:checked + .status-pill{border-color:#c07c00;background:#fff8e1;color:#c07c00}
+.status-option[data-status="aprovado"] input:checked + .status-pill{border-color:#2e7d32;background:#e8f5e9;color:#2e7d32}
+.status-option[data-status="dev"] input:checked + .status-pill{border-color:#7b1fa2;background:#f3e5f5;color:#7b1fa2}
+.status-option[data-status="validacao"] input:checked + .status-pill{border-color:#0277bd;background:#e1f5fe;color:#0277bd}
+.status-option[data-status="concluido"] input:checked + .status-pill{border-color:#37474f;background:#eceff1;color:#37474f}
+
+/* PRINT */
+@media print{
+  body{background:#fff;font-size:11pt}
+  .form-header{background:var(--color-primary)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-radius:0}
+  .no-print{display:none!important}
+  .page-wrapper{padding:0;max-width:100%}
+  .form-section{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid;border-radius:0}
+  .score-card{box-shadow:none}
+}
+
+@media(max-width:640px){
+  .form-grid-2,.form-grid-3{grid-template-columns:1fr}
+  .form-group.span-2,.form-group.span-3{grid-column:span 1}
+  .score-card{flex-direction:column}
+  .score-breakdown{grid-template-columns:1fr}
+  .header-meta{flex-wrap:wrap;gap:var(--space-3)}
+}
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- HEADER -->
+  <div class="form-header">
+    <div class="header-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+      Governança de BI · Unilever
+    </div>
+    <h1>Formulário de Abertura de Demanda</h1>
+    <p>Preencha todos os campos para formalizar a solicitação. O score de prioridade será calculado automaticamente.</p>
+    <div class="header-meta">
+      <div class="header-meta-item"><strong id="display-id">BI-2026-XXXX</strong>ID da Demanda</div>
+      <div class="header-meta-item"><strong id="display-date">—</strong>Data de Abertura</div>
+      <div class="header-meta-item"><strong id="display-score-header">—</strong>Score de Prioridade</div>
+    </div>
+  </div>
+
+  <!-- SCORE CARD -->
+  <div class="score-card">
+    <div class="score-display">
+      <div class="score-circle" id="scoreCircle">
+        <span class="score-value" id="scoreValue">0</span>
+        <span class="score-max">/100</span>
+      </div>
+      <div class="score-label" id="scoreLabel">Aguardando dados</div>
+    </div>
+    <div class="score-breakdown">
+      <div class="score-item">
+        <div>
+          <div class="score-item-label">Urgência (30%)</div>
+          <div class="bar-wrap"><div class="bar-fill" id="bar-urgencia" style="width:0%"></div></div>
+        </div>
+        <span class="score-item-val" id="val-urgencia">—</span>
+      </div>
+      <div class="score-item">
+        <div>
+          <div class="score-item-label">Impacto Financeiro (30%)</div>
+          <div class="bar-wrap"><div class="bar-fill" id="bar-impacto" style="width:0%"></div></div>
+        </div>
+        <span class="score-item-val" id="val-impacto">—</span>
+      </div>
+      <div class="score-item">
+        <div>
+          <div class="score-item-label">Abrangência (20%)</div>
+          <div class="bar-wrap"><div class="bar-fill" id="bar-abrangencia" style="width:0%"></div></div>
+        </div>
+        <span class="score-item-val" id="val-abrangencia">—</span>
+      </div>
+      <div class="score-item">
+        <div>
+          <div class="score-item-label">Facilidade (20%)</div>
+          <div class="bar-wrap"><div class="bar-fill" id="bar-facilidade" style="width:0%"></div></div>
+        </div>
+        <span class="score-item-val" id="val-facilidade">—</span>
+      </div>
+    </div>
+  </div>
+
+  <form id="demandaForm">
+
+  <!-- SEÇÃO 1: IDENTIFICAÇÃO -->
+  <div class="form-section">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div class="section-title">Identificação da Demanda</div>
+    </div>
+    <div class="form-grid form-grid-2" style="gap:var(--space-5)">
+      <div class="form-group">
+        <label>ID da Demanda<span class="required">*</span></label>
+        <div class="id-field">
+          <span id="idField">BI-2026-XXXX</span>
+          <button type="button" class="id-copy-btn" onclick="copyId()">Copiar</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Data de Abertura<span class="required">*</span></label>
+        <input type="date" id="dataAbertura" required>
+      </div>
+      <div class="form-group">
+        <label>Solicitante<span class="required">*</span></label>
+        <input type="text" placeholder="Nome completo do comprador" id="solicitante" required>
+      </div>
+      <div class="form-group">
+        <label>E-mail do Solicitante<span class="required">*</span></label>
+        <input type="email" placeholder="nome@unilever.com" id="email" required>
+      </div>
+      <div class="form-group">
+        <label>Categoria / Área de Compras<span class="required">*</span></label>
+        <select id="categoria" required>
+          <option value="">Selecionar categoria</option>
+          <option>Indirect Procurement</option>
+          <option>Direct Materials</option>
+          <option>Logistics & Supply Chain</option>
+          <option>IT & Digital</option>
+          <option>Marketing & Media</option>
+          <option>Finance</option>
+          <option>HR & Workforce</option>
+          <option>Outra</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Gestor Responsável</label>
+        <input type="text" placeholder="Nome do gestor da área" id="gestor">
+      </div>
+    </div>
+
+    <div style="margin-top:var(--space-5)">
+      <label style="display:block;margin-bottom:var(--space-3)">Status da Demanda</label>
+      <div class="status-row">
+        <label class="status-option" data-status="novo">
+          <input type="radio" name="status" value="novo" checked>
+          <span class="status-pill"><span class="status-dot" style="background:#1A50E8"></span>Novo</span>
+        </label>
+        <label class="status-option" data-status="analise">
+          <input type="radio" name="status" value="analise">
+          <span class="status-pill"><span class="status-dot" style="background:#c07c00"></span>Em Análise</span>
+        </label>
+        <label class="status-option" data-status="aprovado">
+          <input type="radio" name="status" value="aprovado">
+          <span class="status-pill"><span class="status-dot" style="background:#2e7d32"></span>Aprovado</span>
+        </label>
+        <label class="status-option" data-status="dev">
+          <input type="radio" name="status" value="dev">
+          <span class="status-pill"><span class="status-dot" style="background:#7b1fa2"></span>Em Desenvolvimento</span>
+        </label>
+        <label class="status-option" data-status="validacao">
+          <input type="radio" name="status" value="validacao">
+          <span class="status-pill"><span class="status-dot" style="background:#0277bd"></span>Em Validação</span>
+        </label>
+        <label class="status-option" data-status="concluido">
+          <input type="radio" name="status" value="concluido">
+          <span class="status-pill"><span class="status-dot" style="background:#37474f"></span>Concluído</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEÇÃO 2: DESCRIÇÃO -->
+  <div class="form-section">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div class="section-title">Descrição da Demanda</div>
+    </div>
+    <div class="form-grid" style="gap:var(--space-5)">
+      <div class="form-group">
+        <label>Título do Projeto<span class="required">*</span></label>
+        <input type="text" placeholder="Ex: Dashboard de Acompanhamento de Savings por Categoria" id="titulo" required>
+      </div>
+      <div class="form-group">
+        <label>Descrição Detalhada<span class="required">*</span> <span class="hint">O que precisa ser desenvolvido?</span></label>
+        <textarea placeholder="Descreva o que precisa ser criado, qual problema resolve e qual a situação atual sem o projeto..." id="descricao" required></textarea>
+      </div>
+      <div class="form-group">
+        <label>Objetivo de Negócio<span class="required">*</span> <span class="hint">Qual KPI ou meta este projeto suporta?</span></label>
+        <textarea placeholder="Ex: Reduzir tempo de análise de savings de 2h para 15min. Suportar meta de redução de custo de 8% no ano." id="objetivo" style="min-height:70px"></textarea>
+      </div>
+      <div class="form-grid form-grid-2" style="gap:var(--space-5)">
+        <div class="form-group">
+          <label>Tipo de Entregável<span class="required">*</span></label>
+          <select id="entregavel" required>
+            <option value="">Selecionar tipo</option>
+            <option>Dashboard Power BI</option>
+            <option>Relatório Automatizado</option>
+            <option>Aplicativo Power Apps</option>
+            <option>Pipeline de Dados</option>
+            <option>Planilha Automatizada</option>
+            <option>Alerta / Notificação Automática</option>
+            <option>Análise Exploratória (One-Time)</option>
+            <option>Manutenção / Melhoria em Projeto Existente</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Nº Estimado de Usuários<span class="required">*</span></label>
+          <select id="usuarios" required onchange="updateScore()">
+            <option value="">Selecionar</option>
+            <option value="1">1 a 2 usuários</option>
+            <option value="2">3 a 5 usuários</option>
+            <option value="3">6 a 15 usuários</option>
+            <option value="4">16 a 30 usuários</option>
+            <option value="5">Mais de 30 usuários</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEÇÃO 3: PRIORIZAÇÃO -->
+  <div class="form-section">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <div class="section-title">Critérios de Priorização</div>
+    </div>
+
+    <div class="form-grid" style="gap:var(--space-8)">
+
+      <!-- URGÊNCIA -->
+      <div class="form-group">
+        <label>Nível de Urgência<span class="required">*</span></label>
+        <div class="scale-group">
+          <div class="scale-label-row"><span>Baixa</span><span>Alta</span></div>
+          <div class="scale-options" id="scale-urgencia">
+            <label class="scale-option"><input type="radio" name="urgencia" value="1" onchange="updateScore()"><span class="scale-btn">1</span></label>
+            <label class="scale-option"><input type="radio" name="urgencia" value="2" onchange="updateScore()"><span class="scale-btn">2</span></label>
+            <label class="scale-option"><input type="radio" name="urgencia" value="3" onchange="updateScore()"><span class="scale-btn">3</span></label>
+            <label class="scale-option"><input type="radio" name="urgencia" value="4" onchange="updateScore()"><span class="scale-btn">4</span></label>
+            <label class="scale-option"><input type="radio" name="urgencia" value="5" onchange="updateScore()"><span class="scale-btn">5</span></label>
+          </div>
+          <div class="scale-desc">
+            <span>Sem prazo definido</span>
+            <span>Prazo em 2+ meses</span>
+            <span>Prazo em 1 mês</span>
+            <span>Prazo em 2 semanas</span>
+            <span>Urgência imediata</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- IMPACTO FINANCEIRO -->
+      <div class="form-group">
+        <label>Impacto Financeiro<span class="required">*</span></label>
+        <div class="scale-group">
+          <div class="scale-label-row"><span>Baixo</span><span>Alto</span></div>
+          <div class="scale-options" id="scale-impacto">
+            <label class="scale-option"><input type="radio" name="impacto" value="1" onchange="updateScore()"><span class="scale-btn">1</span></label>
+            <label class="scale-option"><input type="radio" name="impacto" value="2" onchange="updateScore()"><span class="scale-btn">2</span></label>
+            <label class="scale-option"><input type="radio" name="impacto" value="3" onchange="updateScore()"><span class="scale-btn">3</span></label>
+            <label class="scale-option"><input type="radio" name="impacto" value="4" onchange="updateScore()"><span class="scale-btn">4</span></label>
+            <label class="scale-option"><input type="radio" name="impacto" value="5" onchange="updateScore()"><span class="scale-btn">5</span></label>
+          </div>
+          <div class="scale-desc">
+            <span>Impacto indireto ou intangível</span>
+            <span>Pequeno saving potencial</span>
+            <span>Saving ou eficiência moderados</span>
+            <span>Alto saving potencial (&gt;R$500k)</span>
+            <span>Impacto crítico no P&L</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABRANGÊNCIA -->
+      <div class="form-group">
+        <label>Abrangência Organizacional<span class="required">*</span></label>
+        <div class="scale-group">
+          <div class="scale-label-row"><span>Restrita</span><span>Ampla</span></div>
+          <div class="scale-options" id="scale-abrangencia">
+            <label class="scale-option"><input type="radio" name="abrangencia" value="1" onchange="updateScore()"><span class="scale-btn">1</span></label>
+            <label class="scale-option"><input type="radio" name="abrangencia" value="2" onchange="updateScore()"><span class="scale-btn">2</span></label>
+            <label class="scale-option"><input type="radio" name="abrangencia" value="3" onchange="updateScore()"><span class="scale-btn">3</span></label>
+            <label class="scale-option"><input type="radio" name="abrangencia" value="4" onchange="updateScore()"><span class="scale-btn">4</span></label>
+            <label class="scale-option"><input type="radio" name="abrangencia" value="5" onchange="updateScore()"><span class="scale-btn">5</span></label>
+          </div>
+          <div class="scale-desc">
+            <span>1 usuário ou 1 processo</span>
+            <span>1 equipe pequena</span>
+            <span>Múltiplos compradores</span>
+            <span>Toda a área de Procurement</span>
+            <span>Multifuncional / global</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- COMPLEXIDADE (INVERSO) -->
+      <div class="form-group">
+        <label>Complexidade Técnica<span class="required">*</span> <span class="hint">Menor complexidade = maior pontuação</span></label>
+        <div class="tag-group" id="tag-complexidade">
+          <label class="tag-option">
+            <input type="radio" name="complexidade" value="5" onchange="updateScore()">
+            <span class="tag-btn"><span class="tag-dot" style="background:#2e7d32"></span>Baixa — dashboard simples, dados prontos</span>
+          </label>
+          <label class="tag-option">
+            <input type="radio" name="complexidade" value="3" onchange="updateScore()">
+            <span class="tag-btn"><span class="tag-dot" style="background:#c07c00"></span>Média — múltiplas fontes ou lógica moderada</span>
+          </label>
+          <label class="tag-option">
+            <input type="radio" name="complexidade" value="1" onchange="updateScore()">
+            <span class="tag-btn"><span class="tag-dot" style="background:#b71c1c"></span>Alta — integração complexa, modelagem pesada</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- JUSTIFICATIVA -->
+      <div class="form-group">
+        <label>Justificativa para Priorização<span class="required">*</span></label>
+        <textarea placeholder="Por que esta demanda deve ser priorizada? Inclua contexto de negócio, eventos críticos, reuniões, prazos regulatórios, etc." id="justificativa" required></textarea>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SEÇÃO 4: PRAZO E FONTES -->
+  <div class="form-section">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <div class="section-title">Prazo e Fontes de Dados</div>
+    </div>
+    <div class="form-grid form-grid-2" style="gap:var(--space-5)">
+      <div class="form-group">
+        <label>Prazo Desejado<span class="required">*</span></label>
+        <input type="date" id="prazo" required>
+      </div>
+      <div class="form-group">
+        <label>Evento que Justifica o Prazo</label>
+        <input type="text" placeholder="Ex: Reunião de Steering, Fechamento Trimestral, Auditoria..." id="evento">
+      </div>
+      <div class="form-group span-2">
+        <label>Fontes de Dados Disponíveis<span class="required">*</span></label>
+        <div class="checkbox-grid">
+          <label class="check-item"><input type="checkbox" value="SAP"><span>SAP (ERP)</span></label>
+          <label class="check-item"><input type="checkbox" value="SharePoint"><span>SharePoint / OneDrive</span></label>
+          <label class="check-item"><input type="checkbox" value="Excel"><span>Planilhas Excel</span></label>
+          <label class="check-item"><input type="checkbox" value="PowerBI"><span>Power BI existente</span></label>
+          <label class="check-item"><input type="checkbox" value="SQL"><span>Banco de Dados SQL</span></label>
+          <label class="check-item"><input type="checkbox" value="API"><span>API / Dados externos</span></label>
+          <label class="check-item"><input type="checkbox" value="Teams"><span>Microsoft Teams / Forms</span></label>
+          <label class="check-item"><input type="checkbox" value="Outra"><span>Outra fonte</span></label>
+        </div>
+      </div>
+      <div class="form-group span-2">
+        <label>Observações sobre os Dados</label>
+        <textarea placeholder="Os dados já estão disponíveis? Há necessidade de extração ou tratamento especial? Alguma restrição de acesso?" id="obs-dados" style="min-height:70px"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEÇÃO 5: OBSERVAÇÕES -->
+  <div class="form-section">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <div class="section-title">Informações Complementares</div>
+    </div>
+    <div class="form-grid" style="gap:var(--space-5)">
+      <div class="form-group">
+        <label>Referências / Exemplos</label>
+        <textarea placeholder="Há algum dashboard ou relatório existente que serve de referência? Links, prints ou descrições..." id="referencias" style="min-height:70px"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Restrições e Dependências</label>
+        <textarea placeholder="Há dependência de outros projetos, aprovações necessárias, restrições de dados ou ferramentas?" id="restricoes" style="min-height:70px"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Critérios de Aceite</label>
+        <textarea placeholder="Como o solicitante vai validar se o entregável atende ao que foi pedido? O que define 'concluído'?" id="aceite" style="min-height:70px"></textarea>
+      </div>
+    </div>
+    <div class="info-box" style="margin-top:var(--space-5)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      <p>Após o envio, o Coordenador de BI irá analisar a demanda e retornar em até <strong>2 dias úteis</strong> com a confirmação de prioridade e estimativa de início. Demandas com score acima de <strong>70 pontos</strong> entram no ciclo de sprint seguinte.</p>
+    </div>
+  </div>
+
+  <!-- AÇÕES -->
+  <div class="form-actions no-print">
+    <button type="button" class="btn btn-ghost" onclick="clearForm()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      Limpar
+    </button>
+    <button type="button" class="btn btn-print" onclick="window.print()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Imprimir / PDF
+    </button>
+    <button type="submit" class="btn btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+      Enviar Demanda
+    </button>
+  </div>
+
+  </form>
+</div>
+
+<script>
+// Generate ID
+function generateId(){
+  const now=new Date();
+  const seq=String(Math.floor(Math.random()*900)+100);
+  return `BI-${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}${seq}`;
+}
+const demandaId=generateId();
+document.getElementById('idField').textContent=demandaId;
+document.getElementById('display-id').textContent=demandaId;
+
+// Set today
+const today=new Date().toISOString().split('T')[0];
+document.getElementById('dataAbertura').value=today;
+const todayFmt=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});
+document.getElementById('display-date').textContent=todayFmt;
+
+function copyId(){
+  navigator.clipboard.writeText(demandaId).catch(()=>{});
+  const btn=document.querySelector('.id-copy-btn');
+  btn.textContent='Copiado!';
+  setTimeout(()=>btn.textContent='Copiar',1500);
+}
+
+// SCORE CALCULATION
+function getRadioVal(name){
+  const el=document.querySelector(`input[name="${name}"]:checked`);
+  return el?parseInt(el.value):0;
+}
+function getSelectVal(id){
+  const el=document.getElementById(id);
+  return el&&el.value?parseInt(el.value):0;
+}
+
+function updateScore(){
+  const urg=getRadioVal('urgencia');
+  const imp=getRadioVal('impacto');
+  const abr=getSelectVal('usuarios'); // abrangência via nº usuários
+  const cmp=getRadioVal('complexidade');
+
+  const score=Math.round(urg*0.30*20 + imp*0.30*20 + abr*0.20*20 + cmp*0.20*20);
+
+  // update bars
+  ['urgencia','impacto'].forEach((k,i)=>{
+    const val=i===0?urg:imp;
+    document.getElementById(`bar-${k}`).style.width=(val/5*100)+'%';
+    document.getElementById(`val-${k}`).textContent=val||'—';
+  });
+  document.getElementById('bar-abrangencia').style.width=(abr/5*100)+'%';
+  document.getElementById('val-abrangencia').textContent=abr||'—';
+  document.getElementById('bar-facilidade').style.width=(cmp/5*100)+'%';
+  document.getElementById('val-facilidade').textContent=cmp||'—';
+
+  document.getElementById('scoreValue').textContent=score;
+  document.getElementById('display-score-header').textContent=score+' pts';
+
+  const circle=document.getElementById('scoreCircle');
+  const label=document.getElementById('scoreLabel');
+  circle.className='score-circle';
+  label.className='score-label';
+  if(score===0){label.textContent='Aguardando dados';}
+  else if(score<40){circle.classList.add('low');label.classList.add('low');label.textContent='Baixa Prioridade';}
+  else if(score<60){circle.classList.add('medium');label.classList.add('medium');label.textContent='Prioridade Média';}
+  else if(score<80){circle.classList.add('high');label.classList.add('high');label.textContent='Alta Prioridade';}
+  else{circle.classList.add('critical');label.classList.add('critical');label.textContent='Prioridade Crítica';}
+}
+
+function clearForm(){
+  if(!confirm('Limpar todos os campos?'))return;
+  document.getElementById('demandaForm').reset();
+  document.getElementById('dataAbertura').value=today;
+  updateScore();
+}
+
+// ── Gera o HTML do PDF com visual limpo e profissional ───────────────────
+function buildPdfHtml(data) {
+  const scoreColor = data.score >= 80 ? '#b71c1c' : data.score >= 60 ? '#E8670A' : data.score >= 40 ? '#c07c00' : '#555';
+  const scoreLabel = data.score >= 80 ? 'Prioridade Crítica' : data.score >= 60 ? 'Alta Prioridade' : data.score >= 40 ? 'Prioridade Média' : 'Baixa Prioridade';
+
+  const row = (label, value) => value ? `
+    <tr>
+      <td style="padding:7px 12px;font-size:11px;color:#6b6965;font-weight:600;width:38%;border-bottom:1px solid #f0eeea;white-space:nowrap">${label}</td>
+      <td style="padding:7px 12px;font-size:11px;color:#1c1a16;border-bottom:1px solid #f0eeea">${value}</td>
+    </tr>` : '';
+
+  const section = (num, title, rows) => `
+    <div style="margin-bottom:20px;border:1px solid #dcd9d5;border-radius:8px;overflow:hidden">
+      <div style="background:#1A50E8;padding:10px 16px;display:flex;align-items:center;gap:10px">
+        <span style="background:rgba(255,255,255,0.25);color:#fff;font-size:10px;font-weight:700;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center">${num}</span>
+        <span style="color:#fff;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase">${title}</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;background:#fff">${rows}</table>
+    </div>`;
+
+  const complexidadeLabel = {'5':'Baixa — dashboard simples, dados prontos','3':'Média — múltiplas fontes ou lógica moderada','1':'Alta — integração complexa, modelagem pesada'};
+
+  return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#1c1a16}
+</style>
+</head>
+<body style="padding:32px">
+
+  <!-- CABEÇALHO -->
+  <div style="background:#1A50E8;border-radius:10px;padding:28px 32px;margin-bottom:24px;position:relative;overflow:hidden">
+    <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.7);margin-bottom:8px">Governança de BI · Unilever</div>
+    <div style="font-size:22px;color:#fff;font-weight:300;margin-bottom:4px">Demanda de BI</div>
+    <div style="font-size:14px;color:rgba(255,255,255,0.85);font-weight:600">${data.titulo || '—'}</div>
+    <div style="display:flex;gap:32px;margin-top:18px">
+      <div><div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.06em">ID</div><div style="font-size:13px;color:#fff;font-weight:700;font-family:monospace">${data.id}</div></div>
+      <div><div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.06em">Data</div><div style="font-size:13px;color:#fff;font-weight:700">${data.dataFmt}</div></div>
+      <div><div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.06em">Score</div><div style="font-size:13px;color:#fff;font-weight:700">${data.score}/100</div></div>
+      <div><div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.06em">Status</div><div style="font-size:13px;color:#fff;font-weight:700">${data.status}</div></div>
+    </div>
+  </div>
+
+  <!-- SCORE CARD -->
+  <div style="border:1px solid #dcd9d5;border-radius:8px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:24px;background:#fff">
+    <div style="text-align:center;flex-shrink:0">
+      <div style="width:80px;height:80px;border-radius:50%;border:5px solid ${scoreColor};background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto">
+        <span style="font-size:24px;font-weight:700;color:${scoreColor};line-height:1">${data.score}</span>
+        <span style="font-size:9px;color:#6b6965">/100</span>
+      </div>
+      <div style="font-size:10px;font-weight:700;color:${scoreColor};margin-top:6px">${scoreLabel}</div>
+    </div>
+    <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      ${[['Urgência (30%)', data.urgencia],['Impacto Financeiro (30%)', data.impacto],['Abrangência (20%)', data.abrangencia],['Complexidade (20%)', data.complexidade]].map(([lbl,val])=>`
+      <div style="background:#f7f6f2;border-radius:6px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:9px;color:#6b6965">${lbl}</div>
+          <div style="height:3px;background:#e8e6e1;border-radius:2px;margin-top:4px;width:80px"><div style="height:100%;background:#1A50E8;border-radius:2px;width:${val/5*100}%"></div></div>
+        </div>
+        <span style="font-size:14px;font-weight:700;color:#1c1a16">${val||'—'}</span>
+      </div>`).join('')}
+    </div>
+  </div>
+
+  ${section(1,'Identificação da Demanda',
+    row('Solicitante', data.solicitante) +
+    row('E-mail', data.email) +
+    row('Categoria', data.categoria) +
+    row('Gestor', data.gestor)
+  )}
+
+  ${section(2,'Descrição da Demanda',
+    row('Título', data.titulo) +
+    row('Tipo de Entregável', data.entregavel) +
+    row('Nº de Usuários', data.usuarios) +
+    row('Descrição', data.descricao ? data.descricao.replace(/\n/g,'<br>') : '') +
+    row('Objetivo de Negócio', data.objetivo ? data.objetivo.replace(/\n/g,'<br>') : '')
+  )}
+
+  ${section(3,'Critérios de Priorização',
+    row('Urgência', data.urgencia + '/5') +
+    row('Impacto Financeiro', data.impacto + '/5') +
+    row('Abrangência', data.abrangencia + '/5') +
+    row('Complexidade', complexidadeLabel[String(data.complexidade)] || data.complexidade) +
+    row('Justificativa', data.justificativa ? data.justificativa.replace(/\n/g,'<br>') : '')
+  )}
+
+  ${section(4,'Prazo e Fontes de Dados',
+    row('Prazo Desejado', data.prazo ? new Date(data.prazo+'T12:00:00').toLocaleDateString('pt-BR') : '') +
+    row('Evento que Justifica', data.evento) +
+    row('Fontes de Dados', data.fontes) +
+    row('Observações sobre Dados', data.obsDados ? data.obsDados.replace(/\n/g,'<br>') : '')
+  )}
+
+  ${section(5,'Informações Complementares',
+    row('Referências / Exemplos', data.referencias ? data.referencias.replace(/\n/g,'<br>') : '') +
+    row('Restrições e Dependências', data.restricoes ? data.restricoes.replace(/\n/g,'<br>') : '') +
+    row('Critérios de Aceite', data.aceite ? data.aceite.replace(/\n/g,'<br>') : '')
+  )}
+
+  <div style="text-align:center;font-size:9px;color:#b0aea9;margin-top:16px;padding-top:12px;border-top:1px solid #e8e6e1">
+    Gerado automaticamente pelo sistema de Governança de BI · Unilever Procurement Logistics · ${data.dataFmt}
+  </div>
+
+</body></html>`;
+}
+
+// ── Gera e faz download do PDF ────────────────────────────────────────────
+async function gerarPDF(data) {
+  const pdfHtml = buildPdfHtml(data);
+
+  // Cria um container invisível fora da tela para renderizar o PDF
+  const container = document.createElement('div');
+  container.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:#fff';
+  container.innerHTML = pdfHtml;
+  document.body.appendChild(container);
+
+  const opt = {
+    margin:      [10, 10, 10, 10],
+    filename:    `Demanda-BI-${data.id}.pdf`,
+    image:       { type: 'jpeg', quality: 0.97 },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
+    jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  try {
+    await html2pdf().set(opt).from(container).save();
+  } finally {
+    document.body.removeChild(container);
+  }
+}
+
+// ── Submit principal ──────────────────────────────────────────────────────
+document.getElementById('demandaForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const score = parseInt(document.getElementById('scoreValue').textContent) || 0;
+  const nivel = document.getElementById('scoreLabel').textContent;
+
+  // ── Configuração SharePoint ──────────────────────────────────────────────
+  const SITE_URL  = 'https://unilever.sharepoint.com/sites/ProcurementLogisticsWHTSP';
+  const LIST_NAME = 'Demandas_BI';
+  // ────────────────────────────────────────────────────────────────────────
+
+  const statusMap = { 'novo':'Novo','analise':'Em análise','aprovado':'Aprovado','dev':'Em análise','validacao':'Em análise','concluido':'Aprovado' };
+  const statusSelecionado = document.querySelector('input[name="status"]:checked')?.value || 'novo';
+  const usuariosEl = document.getElementById('usuarios');
+  const usuariosTexto = usuariosEl.options[usuariosEl.selectedIndex]?.text || '';
+
+  // Dados para o PDF e para o SharePoint
+  const data = {
+    id:           demandaId,
+    dataFmt:      new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}),
+    titulo:       document.getElementById('titulo').value,
+    solicitante:  document.getElementById('solicitante').value,
+    email:        document.getElementById('email').value,
+    categoria:    document.getElementById('categoria').value,
+    gestor:       document.getElementById('gestor').value,
+    descricao:    document.getElementById('descricao').value,
+    objetivo:     document.getElementById('objetivo').value,
+    entregavel:   document.getElementById('entregavel').value,
+    usuarios:     usuariosTexto,
+    urgencia:     getRadioVal('urgencia'),
+    impacto:      getRadioVal('impacto'),
+    abrangencia:  getRadioVal('abrangencia'),
+    complexidade: getRadioVal('complexidade'),
+    prazo:        document.getElementById('prazo').value || null,
+    evento:       document.getElementById('evento').value,
+    fontes:       [...document.querySelectorAll('input[type=checkbox]:checked')].map(i=>i.value).join(', '),
+    obsDados:     document.getElementById('obs-dados').value,
+    justificativa:document.getElementById('justificativa').value,
+    referencias:  document.getElementById('referencias').value,
+    restricoes:   document.getElementById('restricoes').value,
+    aceite:       document.getElementById('aceite').value,
+    score:        score,
+    prioridade:   nivel,
+    status:       statusMap[statusSelecionado] || 'Novo'
+  };
+
+  const payload = {
+    __metadata:  { type: 'SP.Data.Demandas_BIListItem' },
+    Title:       data.titulo,
+    Solicitante: data.solicitante,
+    Email:       data.email,
+    Categoria:   data.categoria,
+    Descricao:   data.descricao,
+    Objetivo:    data.objetivo,
+    Entregavel:  data.entregavel,
+    Urgencia:    data.urgencia,
+    Impacto:     data.impacto,
+    Abrangencia: data.abrangencia,
+    Complexidade:data.complexidade,
+    Prazo:       data.prazo,
+    Score:       data.score,
+    Status:      data.status
+  };
+
+  const btn = document.querySelector('.btn-primary');
+  btn.disabled = true;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Enviando...`;
+
+  try {
+    // 1. Salva na lista SharePoint
+    const ctxResp = await fetch(`${SITE_URL}/_api/contextinfo`, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json;odata=verbose' },
+      credentials: 'include'
+    });
+    if (!ctxResp.ok) throw new Error('Não foi possível autenticar no SharePoint. Verifique se você está logado na sua conta Unilever.');
+
+    const ctxData = await ctxResp.json();
+    const digest  = ctxData.d.GetContextWebInformation.FormDigestValue;
+
+    const createResp = await fetch(`${SITE_URL}/_api/web/lists/getbytitle('${LIST_NAME}')/items`, {
+      method: 'POST',
+      headers: {
+        'Accept':          'application/json;odata=verbose',
+        'Content-Type':    'application/json;odata=verbose',
+        'X-RequestDigest': digest
+      },
+      credentials: 'include',
+      body: JSON.stringify(payload)
+    });
+
+    if (!createResp.ok) {
+      const errData = await createResp.json().catch(() => ({}));
+      throw new Error(errData?.error?.message?.value || `Erro HTTP ${createResp.status}`);
+    }
+
+    // 2. Gera e baixa o PDF automaticamente
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Gerando PDF...`;
+    await gerarPDF(data);
+
+    // 3. Sucesso
+    alert(`✅ Demanda ${demandaId} registrada com sucesso!\n\nScore: ${score}/100 — ${nivel}\n\n📄 O PDF foi gerado e salvo automaticamente.\n\nVocê receberá uma confirmação em até 2 dias úteis.`);
+    clearForm();
+
+  } catch (err) {
+    console.error('Erro:', err);
+    alert(`❌ Erro ao enviar a demanda:\n\n${err.message}\n\nVerifique se você está logado na sua conta Unilever e tente novamente.`);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg> Enviar Demanda`;
+  }
+});
+
+// Initialize
+updateScore();
+</script>
+</body>
+</html>
